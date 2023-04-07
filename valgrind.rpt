@@ -1,0 +1,14 @@
+==190618== Memcheck, a memory error detector
+==190618== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==190618== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==190618== Command: ./records_db -i records.in -o testOUT.out
+==190618== Parent PID: 168601
+==190618== 
+==190618== 
+==190618== HEAP SUMMARY:
+==190618==     in use at exit: 0 bytes in 0 blocks
+==190618==   total heap usage: 67 allocs, 67 frees, 10,410 bytes allocated
+==190618== 
+==190618== All heap blocks were freed -- no leaks are possible
+==190618== 
+==190618== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

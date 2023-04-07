@@ -1,0 +1,39 @@
+# Adding Records
+Add Record Thriller 1982 9 Pop
+Add Record Blue 1959 5 Jazz
+Add Record Red 1976 9 Rock
+Add Record Country 2020 12 Country
+Add Record Country 2020 12 omer
+
+
+# Adding Tracks to records
+Add Track To Record Thriller Thriller 324
+Add Track To Record Thriller BeatIt 412 1
+Add Track To Record Blue SoWhat 295
+Add Track To Record Blue BlueInGreen 146 0
+Add Track To Record Blue BlueInBlack 69 0
+Add Track To Record Blue BlueInOrange 236 0
+Add Track To Record Blue BlueInYellow 246 2
+Add Track To Record Blue BlueInBlue 460 0
+Add Track To Record Red HotelCalifornia 346
+Add Track To Record Red LifeInTheFastLane 245
+Add Track To Record Country OnTheRoad 233
+Add Track To Record Country BlueJeans 235
+Report Records
+
+Remove Record Thriller
+
+# Add another record with tracks
+Add Record Purple 1999 12 Hip-Hop
+Add Track To Record Purple PurpleRain 95
+Add Track To Record Purple WhenDovesCry 94 1
+Add Track To Record Purple Kiss 94 0
+Add Track To Record Purple Let'sGoCrazy 93
+Add Track To Record Purple BlueJeans 95 2
+
+Remove Record Blue
+Report Records
+
+# Reports
+Report Tracks Purple
+Report Containing Records BlueJeans

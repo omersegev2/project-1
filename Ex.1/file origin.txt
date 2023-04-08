@@ -1,0 +1,346 @@
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include "prog2_ex1.h"
+
+// #define MIN_YEAR 1900
+// #define MAX_CHAR 256
+
+// typedef enum e_bool {false, true} bool;
+
+// typedef struct track_s{
+//     char* record_name;
+//     char* track_name;
+//     unsigned int length;
+//     unsigned int position;
+// } track;
+
+// typedef struct {
+//     char* name;
+//     unsigned int year;
+//     unsigned int max_num_of_tracks;
+//     unsigned int curr_num_of_tracks;
+//     track **tracks;
+//     record_category category;
+// } record;
+
+
+// void readRecordsFromFile(FILE* fp_in, FILE* fp_out, record **records);
+// records_result addRecord(record **records,int index, char name[],int year, int max_num_of_tracks,char category[]);
+// records_result addTrack(record **records, int i, char record_name[], char track_name[], int track_len, int position);
+// records_result removeRecord(record **records, char name[], int num_of_records);
+// void doReports(FILE* fp);
+// void reportRecords(record **records, int num_of_records);
+// void reportTracks(record **records, int num_of_records, char record_name[]);
+// void reportContainingTrack(record **records, int num_of_records, char track_name[]);
+// void freeAndExit(FILE* in, FILE* out, record **records);
+// void freeAllRecords(record **records, int num_of_records);
+// record *findRecord(record **records, char* name, int num_of_records);
+// bool findTrack(record *record, char* name, int num_of_tracks);
+// record_category stringToCategory(char category[]);
+
+// int main(int argc, char *argv[]){
+    
+//     FILE* in = stdin;
+//     FILE* out = stdout;
+//     record *records[MAX_RECORDS] = { NULL };
+
+//     char flag[3];
+//     for (int i = 1; i < argc; i++) {
+//         if (strcmp(argv[i], "-i")==0) {
+//           strcpy(flag, "-i");
+//           if(!argv[i+1]){
+//             prog2_report_error_message(INVALID_ARGUMENTS);
+//             freeAndExit(in, out, records);
+//           }
+//           continue;
+//         } else if (strcmp(argv[i], "-o")==0){
+//           strcpy(flag, "-o");
+//           if(!argv[i+1]){
+//             prog2_report_error_message(INVALID_ARGUMENTS);
+//             freeAndExit(in, out, records);
+//           }
+//           continue;
+//         } 
+//         if (strcmp(flag,"-i")==0){
+//             in = fopen(argv[i], "r");
+//             if (in==NULL){
+//                 prog2_report_error_message(CANNOT_OPEN_FILE);
+//                 freeAndExit(in, out, records);
+//             }
+//             strcpy(flag, "");
+//         } else if (strcmp(flag,"-o")==0){
+//             out = fopen(argv[i], "w");
+//             if (out==NULL){
+//                 prog2_report_error_message(CANNOT_OPEN_FILE);
+//                 freeAndExit(in, out, records);
+//             } 
+//             strcpy(flag, "");
+//         } else {
+//             prog2_report_error_message(INVALID_ARGUMENTS);
+//             freeAndExit(in, out, records);
+//         }
+//     }
+    
+//     readRecordsFromFile(in, out, records);
+    
+//     freeAndExit(in,out,records);
+//     return 0;
+// }
+
+// void readRecordsFromFile(FILE* fp_in, FILE* fp_out, record **records) {
+
+//     int i = 0;
+//     records_result res;
+
+//     while(!feof(fp_in)){
+
+//         char buff[MAX_CHAR];
+//         char record_name[MAX_CHAR];
+//         char track_name[MAX_CHAR];
+//         char category[MAX_CHAR];
+//         int length = 0;
+//         int position = 0;
+//         int year = 1900;
+//         int max_num_of_tracks = 0;
+
+//         fscanf(fp_in, "%s", buff);
+
+//         if (strcmp(buff, "Add") == 0) {
+
+//             fscanf(fp_in, "%s", buff);
+        
+//             if (strcmp(buff, "Record") == 0) {
+
+//                 fscanf(fp_in,"%s %d %d %s",record_name, &year, &max_num_of_tracks, category);
+//                 res = addRecord(records, i, record_name, year, max_num_of_tracks, category); 
+
+//                 if(res) {
+
+//                     prog2_report_error_message(res);
+//                     if(res == OUT_OF_MEMORY) freeAndExit(fp_in,fp_out,records);
+
+//                 }
+
+//             } else if (strcmp(buff, "Track") == 0) {
+
+//                 fscanf(fp_in,"%s %s %s %s %d %d",buff, buff, record_name, track_name, &length, &position);
+//                 res = addTrack(records, i, record_name, track_name, length, position);
+
+//                 if(res) {
+//                     prog2_report_error_message(res);
+//                     if(res == OUT_OF_MEMORY) freeAndExit(fp_in,fp_out,records);
+//                 }
+//             }
+//         } else if (strcmp(buff, "Remove") == 0) {
+
+//             fscanf(fp_in, "%s %s",buff ,record_name);
+//             res = removeRecord(records, record_name, i);
+
+//             if(res) prog2_report_error_message(res);
+
+//         } else if (strcmp(buff, "Report") == 0) {
+
+//             fscanf(fp_in,"%s",buff);
+
+//             if(strcmp(buff,"Records")){
+
+//                 reportRecords(records, i);
+
+//             } else if(strcmp(buff,"Tracks")){
+
+//                 fscanf(fp_in, "%s", track_name);
+//                 reportTracks(records, i, record_name);
+
+//             } else if(strcmp(buff,"Containing")){
+
+//                 fscanf(fp_in,"%s %s", buff, track_name);
+//                 reportContainingTrack(records, i, track_name);
+//             }
+//         }
+//         i++;
+//     }
+// }
+
+// records_result addRecord(record **records, int i, char name[],int year, int max_num_of_tracks,char category[]){
+    
+//     record_category r_category;
+
+//     if(year < MIN_YEAR){
+//         return INVALID_YEAR;
+//     }
+
+//     if(max_num_of_tracks < 0){
+//         return INVALID_NUM_OF_TRACKS;
+//     }
+    
+//     r_category = stringToCategory(category);
+//     if(r_category>ALL_CATEGORIES){
+//         return INVALID_CATEGORY;
+//     }
+    
+//     if(findRecord(records, name, i)){
+//         return RECORD_ALREADY_EXISTS;
+//     }
+
+//     records[i] = (record *)malloc(sizeof(record));
+//     if(records[i] == NULL){
+//         return OUT_OF_MEMORY;
+//     }
+//     memset(records[i], 0, sizeof(record));
+
+//     records[i]->name = (char *)malloc(strlen(name) + 1);
+//     if(records[i]->name == NULL){
+//         return OUT_OF_MEMORY;
+//     }
+//     memset(records[i]->name, 0, (strlen(name) * sizeof(char) + 1));
+
+//     records[i]->tracks = (track **)malloc(sizeof(track*)*max_num_of_tracks);
+//     if(records[i]->tracks == NULL){
+//         return OUT_OF_MEMORY;
+//     }
+//     memset(records[i]->tracks, 0, (sizeof(track*)*max_num_of_tracks));
+
+//     strcpy(records[i]->name, name);
+//     records[i]->max_num_of_tracks = max_num_of_tracks;
+//     records[i]->curr_num_of_tracks = 0;
+//     records[i]->year = year;
+//     records[i]->category = r_category;
+    
+//     return SUCCESS;
+// }
+
+// records_result addTrack(record **records, int i, char record_name[], char track_name[], int track_len, int position){
+    
+//     // printf(" %s %s %d %d\n", record_name, track_name, track_len, position);
+
+//     if(findRecord(records, record_name , i)){
+//         return RECORD_DOESNT_EXIST;
+//     }
+//     if(track_len < 0){
+//         return INVALID_TRACK_LENGTH;
+//     }
+//     // printf("%n\n", records[i]);
+//     printf("%d\n", i);
+
+//     // if(records[i]->curr_num_of_tracks < position){
+//     //     return INVALID_TRACK_POSITION;
+//     // }
+//     // if(records[i]->max_num_of_tracks == records[i]->curr_num_of_tracks){
+//     //     return TRACK_OVERFLOW;
+//     // }
+//     // if(findTrack(records[i], track_name, records[i]->curr_num_of_tracks)){
+//     //     return TRACK_ALREADY_EXISTS;
+//     // }
+
+//     // records[i]->tracks[position] = (track *)malloc(sizeof(track));
+
+//     // if(records[i]->tracks[position].track_name == NULL){
+//     //     prog2_report_error_message(OUT_OF_MEMORY);
+//     //     free_records(records, i);
+//     //     exit(-1);
+//     // }
+
+//     // records[i]->tracks[position].record_name = (char *)malloc(strlen(record_name) * (sizeof(char)+1));
+//     // if(records[i]->tracks[position].record_name == NULL){
+//     //     prog2_report_error_message(OUT_OF_MEMORY);
+//     //     free_records(records, i);
+//     //     exit(-1);
+//     // }
+
+//     // strcmp(records[i]->tracks[position].track_name, track_name);
+//     // strcmp(records[i]->tracks[position].record_name, record_name);
+//     // records[i]->tracks[position].length = length;
+//     // records[i]->tracks[position].position = position;
+//     return SUCCESS;
+// }
+
+// records_result removeRecord(record **records, char name[], int num_of_records){
+//     for (int i = 0; i < num_of_records; i++) {
+//         if(records[i] != NULL && strcmp(records[i]->name,name)==0){
+//             if(records[i]->tracks[i]){
+//                 free(records[i]->tracks[i]->record_name);
+//                 free(records[i]->tracks[i]->track_name);
+//                 free(records[i]->tracks[i]);
+//             }
+//             free(records[i]->name);
+//             free(records[i]);
+//             return SUCCESS;
+//         }
+//     } 
+//     return RECORD_DOESNT_EXIST;
+// }
+
+// void reportRecords(record **records, int num_of_records){
+//     //void reportRecords(record **records, int num_of_records , [category])
+//     //TODO: option category 
+
+// }
+// void reportTracks(record **records, int num_of_records, char record_name[]){
+
+// }
+// void reportContainingTrack(record **records, int num_of_records, char track_name[]){
+
+// }
+
+// void freeAndExit(FILE* in, FILE* out, record **records){
+//     freeAllRecords(records, MAX_RECORDS);
+//     fclose(in);
+//     fclose(out);
+//     exit(EXIT_FAILURE);
+// }
+
+// record *findRecord(record **records, char* name, int num_of_records) {
+//     for (int i = 0; i < num_of_records; i++) {
+//         if (records[i] != NULL && strcmp(records[i]->name,name)==0)
+//             return records[i];
+//     }
+//     return NULL;
+// }
+
+// bool findTrack(record *record, char* name, int num_of_tracks){
+//     for (int i = 0; i < num_of_tracks; i++) {
+//         if(record->tracks[i] != NULL && strcmp(record->tracks[i]->track_name, name)){
+//             return true;
+//         }
+//     }
+//     return false;  
+// }
+
+// void freeAllRecords(record **records, int num_of_records) {
+//     for (int i = 0; i < MAX_RECORDS; i++) {
+//         if (records[i] != NULL) {
+//             if (records[i]->name != NULL) { 
+//                 if(records[i]->tracks != NULL){
+//                     for (int j = 0; j < records[i]->curr_num_of_tracks; j++) {
+//                         if(records[i]->tracks[j] != NULL){
+//                             free(records[i]->tracks[j]->record_name);
+//                             free(records[i]->tracks[j]->track_name);
+//                             free(records[i]->tracks[j]);
+//                         } 
+//                     }
+//                     free(records[i]->tracks);
+//                 }
+//                 free(records[i]->name);
+//             }
+//             free(records[i]);
+//         }
+//     }
+// }
+
+// record_category stringToCategory(char category[]){
+
+//     record_category r_category = -1;
+    
+//     if(strcmp(category,"Rock")==0) r_category=ROCK;
+//     if(strcmp(category,"Pop")==0) r_category=POP;
+//     if(strcmp(category,"Jazz")==0) r_category=JAZZ;
+//     if(strcmp(category,"Blues")==0) r_category=BLUES;
+//     if(strcmp(category,"Hip-Hop")==0) r_category=HIP_HOP;
+//     if(strcmp(category,"Country")==0) r_category=COUNTRY;
+//     if(strcmp(category,"Classic")==0) r_category=CLASSIC;
+//     if(strcmp(category,"All-Categories")==0) r_category=ALL_CATEGORIES;
+
+//     return r_category;
+// }
+

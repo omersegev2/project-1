@@ -1,0 +1,42 @@
+Report Records
+
+Add Record Rec1 1980 11 Jazz
+Add Record Rec2 1980 10 Classic
+Add Record Rec3 1980 9 Rock
+Add Record Rec4 1980 13 Pop
+Add Record Rec5 1980 12 Country
+  Add Record Rec6 1980 0 Rock
+Add Record Rec7 1890 17 Rock
+Add Record Rec8 1890 16 Dance
+Add Record Rec9 1980 15 Jazz
+Add Record Rec10 1980 14 Classic
+Add Record Rec11 1980 13 Rock
+Add Record Rec12 1980 17 Pop
+Add Record Rec13 1980 16 Electronic
+
+Add Track To Record Rec1 Track1 243
+Add Track To Record Rec1 Track2 321 0
+Add Track To Record Rec1 Track3 123 0
+Add Track To Record Rec1 Track4 341
+Add Track To Record Rec1 Track5 123 2
+
+Report Records 
+Report Tracks Rec1
+
+Add Track To Record Rec2 Track1 243
+Add Track To Record Rec2 Track2 321 0
+Add Track To Record Rec2 Track3 123 0
+Add Track To Record Rec2 Track4 341
+Add Track To Record Rec2 Track5 123 2
+Add Track To Record Rec2 Track6 123 2
+Add Track To Record Rec2 Track7 123 2
+Add Track To Record Rec2 Track8 123 2
+
+Add Track To Record Rec3 Track1 432
+Add Track To Record Rec6 Track1 254
+
+Remove Record Rec3
+Remove Record Rec6
+
+Report Records Rock
+Report Containing Records Track2

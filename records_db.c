@@ -31,7 +31,8 @@ typedef struct {
 
 
 // void readRecordsFromFile(FILE* fp_in, FILE* fp_out, records_db *R);
-void readFile(FILE* fp_in, FILE* fp_out, records_db *R);
+void loadRecords(FILE* fp_in, FILE* fp_out, records_db *R);
+void loadRecordsFromFile(FILE* fp_in, FILE* fp_out, records_db *R);
 void freeAndExit(FILE* in, FILE* out, records_db *R);
 void freeAllRecords(records_db *R);
 void sortRecordsByName(records_db *R);
@@ -49,12 +50,11 @@ record_category stringToCategory(char category[]);
 
 int main(int argc, char *argv[]){
     
+    char flag[3];
     FILE* in = stdin;
     FILE* out = stdout;
     records_db R = {{ NULL }, 0};
 
-
-    char flag[3];
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-i")==0) {
           strcpy(flag, "-i");
@@ -91,16 +91,13 @@ int main(int argc, char *argv[]){
         }
     }
     
-    readFile(in, out, &R);
-
-    // readRecordsFromFile(in, out, &R);
-
+    loadRecords(in,out,&R);
+   
     freeAndExit(in,out, &R);
     return 0;
 }
 
-void readFile(FILE* fp_in, FILE* fp_out, records_db *R){
-
+void loadRecords(FILE* fp_in, FILE* fp_out, records_db *R){
     records_result res = SUCCESS;
 
     char line[MAX_LEN];
@@ -112,46 +109,75 @@ void readFile(FILE* fp_in, FILE* fp_out, records_db *R){
     unsigned int length = 0;
     unsigned int position = 0;
 
-    while(fgets(line,MAX_LEN,fp_in)){
-        
-        char* ptr = line;
-        while (*ptr && isspace(*ptr)) {
-            ptr++;
-        }
-        
-        if(strncmp(ptr, "Add Record ", 11) == 0){
-            sscanf(ptr + 11," %s %u %u %s", record_name, &year, &max_num_of_tracks, category);
-            res = addRecord(R, record_name, year, max_num_of_tracks, category);
+    while(fgets(line, MAX_LEN, fp_in)){
+        char* token = strtok(line, " \n");
 
-        } else if(strncmp(ptr, "Add Track To Record", 19) == 0){
-            
-            if(sscanf(ptr + 19," %s %s %u %u", record_name, track_name, &length, &position) == 3){
-                position = 0;
-            }
-            res = addTrack(R, record_name, track_name, length, position);
-
-        } else if(strncmp(ptr, "Remove Record", 13) == 0){
-            sscanf(ptr+13," %s", record_name);
-            res = removeRecordByName(R,record_name);
-
-        } else if(strncmp(ptr, "Report Records", 14) == 0){
-            if(sscanf(ptr+14, "%s", category) != 1){
-                strcpy(category,"All-Categories");
-            }
-            res = reportRecords(R, fp_out, category);
-    
-        } else if(strncmp(ptr, "Report Tracks", 13) == 0){
-            sscanf(ptr+13, "%s", record_name);
-            res = reportTracks(R, fp_out, record_name);
-
-        } else if(strncmp(ptr, "Report Containing Records", 25) == 0){
-            sscanf(ptr+25, "%s", track_name);
-            res = reportContainingTrack(R, fp_out, track_name);
+        if(token == NULL){
+            continue;
         }
 
-        if(res != SUCCESS) {
+        if(strcmp(token, "Add")==0){
+            token = strtok(NULL, " \r\n");
+            if(strcmp(token,"Record")==0){
+                token = strtok(NULL, " \r\n");
+                strcpy(record_name,token);
+                token = strtok(NULL, " \r\n");
+                year = atoi(token);
+                token = strtok(NULL, " \r\n");
+                max_num_of_tracks = atoi(token);
+                token = strtok(NULL, " \r\n");
+                strcpy(category,token);
+                res = addRecord(R, record_name, year, max_num_of_tracks, category);
+            } else if(strcmp(token,"Track")==0){
+                token = strtok(NULL, " \r\n");// To
+                token = strtok(NULL, " \r\n");//Record
+                token = strtok(NULL, " \r\n");
+                strcpy(record_name,token);
+                token = strtok(NULL, " \r\n");
+                strcpy(track_name,token);
+                token = strtok(NULL, " \r\n");
+                length = atoi(token);
+                token = strtok(NULL, " \r\n");
+
+                if(token != NULL) {
+                    position = atoi(token);
+                } else {
+                    position = 0;
+                }
+
+                res = addTrack(R, record_name, track_name, length, position);
+            }
+        } else if(strcmp(token,"Remove")==0){
+            token = strtok(NULL, " \r\n");
+            if(strcmp(token,"Record")==0){
+                token = strtok(NULL, " \r\n");
+                strcpy(record_name,token);
+                res = removeRecordByName(R, record_name);
+            }
+        } else if(strcmp(token, "Report")==0){
+            token = strtok(NULL, " \r\n");
+            if(strcmp(token, "Records")==0){
+                token = strtok(NULL, " \r\n");
+                if(token != NULL){
+                    strcpy(category, token);
+                } else {
+                    strcpy(category, "All-Categories");
+                }
+                res = reportRecords(R, fp_out, category);
+            } else if(strcmp(token, "Tracks")==0){
+                token = strtok(NULL, " \r\n");
+                strcpy(record_name, token);
+                res = reportTracks(R, fp_out, record_name);
+            } else if(strcmp(token,"Containing")==0){
+                token = strtok(NULL, " \r\n");//Records
+                token = strtok(NULL, " \r\n");
+                strcpy(track_name, token);
+                res = reportContainingTrack(R, fp_out, track_name);
+            }
+        }
+        if(res != SUCCESS){
             prog2_report_error_message(res);
-            if(res == OUT_OF_MEMORY) freeAndExit(fp_in,fp_out, R);
+            if (res == OUT_OF_MEMORY) freeAndExit(fp_in,fp_out,R);
         }
         res = SUCCESS;
     }
@@ -477,76 +503,61 @@ void sortRecordsByName(records_db *R){
 }
 
 /*
-
-// void readRecordsFromFile(FILE* fp_in, FILE* fp_out, records_db *R) {
+// void loadRecords(FILE* fp_in, FILE* fp_out, records_db *R){
 
 //     records_result res = SUCCESS;
 
-//     while(!feof(fp_in)){
+//     char line[MAX_LEN];
+//     char record_name[MAX_LEN];
+//     char track_name[MAX_LEN];
+//     char category[MAX_LEN];
+//     unsigned int year = MIN_YEAR;
+//     unsigned int max_num_of_tracks = 0;
+//     unsigned int length = 0;
+//     unsigned int position = 0;
 
-//         char buff[MAX_LEN];
-//         char record_name[MAX_LEN];
-//         char track_name[MAX_LEN];
-//         char category[MAX_LEN];
-//         unsigned int length = 0;
-//         unsigned int position = 0;
-//         unsigned int year = 1900;
-//         unsigned int max_num_of_tracks = 0;
-
-//         fscanf(fp_in, "%s", buff);
-
-//         if (strcmp(buff, "Add") == 0) {
-
-//             fscanf(fp_in, "%s", buff);
+//     while(fgets(line,MAX_LEN,fp_in)){
         
-//             if (strcmp(buff, "Record") == 0) {
-
-//                 fscanf(fp_in,"%s %u %u %s",record_name, &year, &max_num_of_tracks, category);
-//                 res = addRecord(R, record_name, year, max_num_of_tracks, category); 
-
-//             } else if (strcmp(buff, "Track") == 0) {
-
-//                 fscanf(fp_in,"%s %s %s %s %u %u",buff, buff, record_name, track_name, &length, &position);
-//                 res = addTrack(R, record_name, track_name, length, position);
-
-//             }
-//         } else if (strcmp(buff, "Remove") == 0) {
-
-//             fscanf(fp_in, "%s %s",buff ,record_name);
-//             res = removeRecordByName(R, record_name);
-            
-//         } else if (strcmp(buff, "Report") == 0) {
-
-//             fscanf(fp_in,"%s",buff);
-            
-//             if(strcmp(buff,"Records") == 0){
-
-//                 int c = fgetc(fp_in);
-//                 if(c == EOF || c == '\n'){
-//                     strcpy(category,"All-Categories");
-//                 } else if(c == '\0') {
-//                     fscanf(fp_in,"%s", category);
-//                 }
-
-//                 res = reportRecords(R, fp_out, category);
-
-//             } else if(strcmp(buff,"Tracks")==0){
-                
-//                 fscanf(fp_in, "%s", record_name);
-//                 res = reportTracks(R, fp_out, record_name);
-
-//             } else if(strcmp(buff,"Containing")==0){
-
-//                 fscanf(fp_in,"%s %s", buff, track_name);
-//                 res = reportContainingTrack(R, fp_out, track_name);
-//             }
+//         char* ptr = line;
+//         while (*ptr && isspace(*ptr)) {
+//             ptr++;
 //         }
+        
+//         if(strncmp(ptr, "Add Record ", 11) == 0){
+//             sscanf(ptr + 11," %s %u %u %s", record_name, &year, &max_num_of_tracks, category);
+//             res = addRecord(R, record_name, year, max_num_of_tracks, category);
+
+//         } else if(strncmp(ptr, "Add Track To Record", 19) == 0){
+            
+//             if(sscanf(ptr + 19," %s %s %u %u", record_name, track_name, &length, &position) == 3){
+//                 position = 0;
+//             }
+//             res = addTrack(R, record_name, track_name, length, position);
+
+//         } else if(strncmp(ptr, "Remove Record", 13) == 0){
+//             sscanf(ptr+13," %s", record_name);
+//             res = removeRecordByName(R,record_name);
+
+//         } else if(strncmp(ptr, "Report Records", 14) == 0){
+//             if(sscanf(ptr+14, "%s", category) != 1){
+//                 strcpy(category,"All-Categories");
+//             }
+//             res = reportRecords(R, fp_out, category);
+    
+//         } else if(strncmp(ptr, "Report Tracks", 13) == 0){
+//             sscanf(ptr+13, "%s", record_name);
+//             res = reportTracks(R, fp_out, record_name);
+
+//         } else if(strncmp(ptr, "Report Containing Records", 25) == 0){
+//             sscanf(ptr+25, "%s", track_name);
+//             res = reportContainingTrack(R, fp_out, track_name);
+//         }
+
 //         if(res != SUCCESS) {
 //             prog2_report_error_message(res);
 //             if(res == OUT_OF_MEMORY) freeAndExit(fp_in,fp_out, R);
-//             res = SUCCESS;
 //         }
+//         res = SUCCESS;
 //     }
 // }
 */
-
